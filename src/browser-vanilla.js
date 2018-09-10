@@ -48,29 +48,35 @@ elementQuery = { element: 'category', 'meta': { 'classes': 'api' } }
   var find = function (el, elementQuery) {
     for (var prop in elementQuery) {
       if (elementQuery.hasOwnProperty(prop)) {
+        var match = false
         var val = elementQuery[prop]
         var obj = el[prop]
 
         // check type first
         if (typeof val === 'object' && val !== null) {
-          if (obj) {
+          if (typeof obj === 'object' && obj !== null) {
             // try recursion
-            return find(obj, val)
+            match = find(obj, val)
+          } else {
+            // element has not current property
+            return false
+          }
+        } else {
+          // support checking string or number within array
+          if (!Array.isArray(obj)) {
+            obj = [ obj ]
+          }
+          for (var i = 0; i < obj.length; i++) {
+            if (obj[i] === val) {
+              match = true
+              break
+            }
           }
         }
-        // support checking string or number within array
-        var match = false
-        if (!Array.isArray(obj)) {
-          obj = [ obj ]
-        }
-        for (var i = 0; i < obj.length; i++) {
-          if (obj[i] === val) {
-            match = true
-            break
-          }
-        }
+
         if (!match) {
           // not matched
+          // does not need to continue
           return false
         }
       }
