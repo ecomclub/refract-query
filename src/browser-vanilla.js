@@ -1,5 +1,15 @@
 // Simple version for browser compatibility with vanilla JS
-// Original (with Lodash 3): ./index.js
+
+/*
+Original (with Lodash 3):
+https://github.com/apiaryio/refract-query/blob/master/src/index.js
+*/
+
+/*
+Supported element query samples:
+elementQuery = { element: 'category' }
+elementQuery = { element: 'category', 'meta': { 'classes': 'api' } }
+*/
 
 (function () {
   'use strict'
@@ -23,13 +33,8 @@
         results.push(nested[ii])
       }
 
-      var skip = false
-      for (var prop in elementQuery) {
-        if (elementQuery.hasOwnProperty(prop) && el[prop] !== elementQuery[prop]) {
-          skip = true
-          break
-        }
-      }
+      // test query at the current level
+      var skip = !find(el, elementQuery)
       if (!skip) {
         // matched
         results.push(el)
@@ -37,6 +42,42 @@
     }
 
     return results
+  }
+
+  // set find function for recursion
+  var find = function (el, elementQuery) {
+    for (var prop in elementQuery) {
+      if (elementQuery.hasOwnProperty(prop)) {
+        var val = elementQuery[prop]
+        var obj = el[prop]
+
+        // check type first
+        if (typeof val === 'object' && val !== null) {
+          if (obj) {
+            // try recursion
+            return find(obj, val)
+          }
+        }
+        // support checking string or number within array
+        var match = false
+        if (!Array.isArray(obj)) {
+          obj = [ obj ]
+        }
+        for (var i = 0; i < obj.length; i++) {
+          if (obj[i] === val) {
+            match = true
+            break
+          }
+        }
+        if (!match) {
+          // not matched
+          return false
+        }
+      }
+    }
+
+    // goes here if matched
+    return true
   }
 
   if (typeof module !== 'undefined' && module.exports) {
