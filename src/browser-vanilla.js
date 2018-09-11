@@ -18,7 +18,7 @@ elementQuery = { element: 'category', 'meta': { 'classes': 'api' } }
    * Queries the whole Refract tree and finds a respective
    * element(s) which matches the query.
    */
-  var query = function (element, elementQuery) {
+  var query = function (element, elementQuery, noDeep) {
     if (typeof element !== 'object' || element === null || !Array.isArray(element.content)) {
       return []
     }
@@ -27,17 +27,19 @@ elementQuery = { element: 'category', 'meta': { 'classes': 'api' } }
     // find elements
     for (var i = 0; i < element.content.length; i++) {
       var el = element.content[i]
-      // go deep
-      var nested = query(el, elementQuery)
-      for (var ii = 0; ii < nested.length; ii++) {
-        results.push(nested[ii])
-      }
-
       // test query at the current level
       var skip = !find(el, elementQuery)
       if (!skip) {
         // matched
         results.push(el)
+      }
+
+      if (!noDeep) {
+        // go deep
+        var nested = query(el, elementQuery)
+        for (var ii = 0; ii < nested.length; ii++) {
+          results.push(nested[ii])
+        }
       }
     }
 
